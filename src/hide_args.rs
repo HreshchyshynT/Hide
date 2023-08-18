@@ -26,3 +26,9 @@ pub struct HideArgs {
     #[arg(long = "remove-words")]
     pub remove_words: Vec<String>,
 }
+
+#[test]
+fn verify_args() {
+    use clap::CommandFactory;
+    HideArgs::command().debug_assert();
+}
