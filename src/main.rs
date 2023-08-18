@@ -2,7 +2,6 @@ use clap::Parser;
 
 use crate::hide_args::HideArgs;
 
-mod error;
 mod hide_args;
 
 fn main() {
