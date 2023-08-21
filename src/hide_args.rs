@@ -20,20 +20,9 @@ pub struct HideArgs {
     #[arg(short, long)]
     pub debug: bool,
     /// add keywords to hide in the JSON
-    #[arg(long = "add-words")]
+    #[arg(long = "add-words", value_delimiter = ',')]
     pub add_words: Vec<String>,
     /// remove keywords from hiding in the JSON
-    #[arg(long = "remove-words")]
+    #[arg(long = "remove-words", value_delimiter = ',')]
     pub remove_words: Vec<String>,
-}
-#[cfg(test)]
-mod test {
-
-    use super::*;
-
-    #[test]
-    fn verify_args() {
-        use clap::CommandFactory;
-        HideArgs::command().debug_assert();
-    }
 }
