@@ -1,0 +1,11 @@
+{
+		"name": "Taras",
+		"surname": "Hreshchyshyn",
+		"age": 123,
+		"nested": {
+			"file": "test_nested.json",
+			"nickname": "cool nickname",
+			"name": "TarasNested",
+			"surname": "HreshchyshynNested"
+		}
+}
