@@ -39,6 +39,8 @@ Provide instructions on how to install Hide, including any dependencies or platf
 
 Contributions to Hide are welcome! Whether it's bug reporting, feature requests, or code contributions, please see our [Contributing Guide](link-to-contributing-guide) for details.
 
+## TODO: 3rd party libraries
+
 ## License
 
 Hide is licensed under the [MIT License](./LICENSE.MD).
