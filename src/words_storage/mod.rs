@@ -30,7 +30,6 @@ impl WordsStorage for InMemoryWordsStorage {
         if word.is_empty() {
             return Err(Error::Other(String::from("Can't save empty string")));
         }
-        println!("saving {}, storage: {:?}", word, self.storage);
         match self.storage.insert(word.to_string()) {
             true => Ok(()),
             false => Err(Error::WordAlreadyExists(word.to_string())),
