@@ -1,13 +1,17 @@
-use clap::Parser;
-
 use crate::hide_args::HideArgs;
 use crate::words_storage::{InMemoryWordsStorage, WordsStorage};
+use clap::Parser;
+use simple_logger::SimpleLogger;
 
 mod hide_args;
 mod words_storage;
 
 fn main() {
     let args = HideArgs::parse();
+    if args.debug {
+        SimpleLogger::new().init().unwrap();
+        log::warn!("debug enabled, logger initialized.");
+    }
     let mut storage = InMemoryWordsStorage::new();
 
     if !args.add_words.is_empty() {
