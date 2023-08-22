@@ -53,12 +53,12 @@ fn main() {
     log::debug!("input map:\n{:?}", input_map);
 
     let output = hide_keys(&storage, &input_map);
-
+    let output = serde_json::to_string_pretty(&output).unwrap();
     match args.output_file {
         // print to console if output file not specified
-        None => println!("{:?}", json!(output).to_string()),
+        None => println!("{output}"),
         // write to file
-        Some(path) => fs::write(path, json!(output).to_string()).unwrap(),
+        Some(path) => fs::write(path, output).unwrap(),
     };
 }
 
