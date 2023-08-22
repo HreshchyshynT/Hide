@@ -61,7 +61,7 @@ fn main() -> Result<()> {
     Ok(())
 }
 
-fn add_words<S: WordsStorage>(storage: &mut S, words: &Vec<String>) {
+fn add_words(storage: &mut impl WordsStorage, words: &Vec<String>) {
     log::debug!("adding words...");
     words
         .iter()
@@ -73,7 +73,7 @@ fn add_words<S: WordsStorage>(storage: &mut S, words: &Vec<String>) {
         .for_each(|msg| log::debug!("{}", msg));
 }
 
-fn remove_words<S: WordsStorage>(storage: &mut S, words: &Vec<String>) {
+fn remove_words(storage: &mut impl WordsStorage, words: &Vec<String>) {
     log::debug!("removing words...");
     words
         .iter()
@@ -85,7 +85,7 @@ fn remove_words<S: WordsStorage>(storage: &mut S, words: &Vec<String>) {
         .for_each(|msg| log::debug!("{}", msg));
 }
 
-fn hide_keys<S: WordsStorage>(storage: &S, json_map: &Map<String, Value>) -> Map<String, Value> {
+fn hide_keys(storage: &impl WordsStorage, json_map: &Map<String, Value>) -> Map<String, Value> {
     let mut result_map = serde_json::Map::with_capacity(json_map.len());
     for (key, value) in json_map {
         log::debug!("key: {}, value: {}", key, value);
