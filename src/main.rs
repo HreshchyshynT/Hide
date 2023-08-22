@@ -1,5 +1,6 @@
 use crate::hide_args::HideArgs;
 use crate::words_storage::{InMemoryWordsStorage, WordsStorage};
+use anyhow::{Context, Result};
 use clap::Parser;
 use serde_json::{json, Map, Value};
 use simple_logger::SimpleLogger;
@@ -8,7 +9,7 @@ use std::fs;
 mod hide_args;
 mod words_storage;
 
-fn main() {
+fn main() -> Result<()> {
     let args = HideArgs::parse();
 
     // init logger if debug enabled
@@ -31,21 +32,18 @@ fn main() {
 
     // nothing to do if input not specified
     if let None = args.input_file {
-        return;
+        return Ok(());
     }
 
     let input_path = args.input_file.unwrap();
 
-    if !input_path.exists() || !input_path.is_file() {
-        panic!("File not exists or not a file.")
-    }
-
     let input_path = input_path.to_str().unwrap();
 
-    let file_str = fs::read_to_string(input_path).expect("could not read file");
+    let file_str = fs::read_to_string(input_path)
+        .with_context(|| format!("could not read file: {}", input_path))?;
 
     let input_map: Map<String, Value> = serde_json::from_str::<Value>(&file_str)
-        .unwrap()
+        .with_context(|| format!("could not parse file: {}", input_path))?
         .as_object()
         .unwrap()
         .clone();
@@ -60,6 +58,7 @@ fn main() {
         // write to file
         Some(path) => fs::write(path, output).unwrap(),
     };
+    Ok(())
 }
 
 fn add_words<S: WordsStorage>(storage: &mut S, words: &Vec<String>) {
