@@ -1,7 +1,7 @@
 use crate::hide_args::HideArgs;
 use crate::words_storage::{InMemoryWordsStorage, WordsStorage};
 use clap::Parser;
-use serde_json::{json, value, Map, Value};
+use serde_json::{json, Map, Value};
 use simple_logger::SimpleLogger;
 use std::fs;
 
@@ -44,17 +44,22 @@ fn main() {
 
     let file_str = fs::read_to_string(input_path).expect("could not read file");
 
-    let map: Map<String, Value> = serde_json::from_str::<Value>(&file_str)
+    let input_map: Map<String, Value> = serde_json::from_str::<Value>(&file_str)
         .unwrap()
         .as_object()
         .unwrap()
         .clone();
 
-    let output = hide_keys(&storage, &map);
+    log::debug!("input map:\n{:?}", input_map);
 
-    // TODO: output to file if path specified
-    // print otherwise
-    println!("{:?}", output);
+    let output = hide_keys(&storage, &input_map);
+
+    match args.output_file {
+        // print to console if output file not specified
+        None => println!("{:?}", json!(output).to_string()),
+        // write to file
+        Some(path) => fs::write(path, json!(output).to_string()).unwrap(),
+    };
 }
 
 fn add_words<S: WordsStorage>(storage: &mut S, words: &Vec<String>) {
@@ -86,11 +91,9 @@ fn hide_keys<S: WordsStorage>(storage: &S, json_map: &Map<String, Value>) -> Map
     for (key, value) in json_map {
         log::debug!("key: {}, value: {}", key, value);
         let value = if value.is_object() {
-            // TODO: fix Object({})
             json!(hide_keys(storage, value.as_object().unwrap()))
         } else if storage.contains(key) {
-            // TODO: fix String("hidden")
-            value::to_value("hidden").unwrap()
+            Value::String("hidden".to_string())
         } else {
             value.clone()
         };
