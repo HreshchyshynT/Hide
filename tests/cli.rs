@@ -2,7 +2,7 @@ use assert_cmd::prelude::*; // Add methods on commands
 use assert_fs::prelude::*;
 use predicates::prelude::*;
 use serde_json::json; // Used for writing assertions
-use std::process::Command; // Run programs
+use std::{fs, path::PathBuf, process::Command, str::FromStr}; // Run programs
 
 #[test]
 fn file_doesnt_exist() -> Result<(), Box<dyn std::error::Error>> {
@@ -41,13 +41,30 @@ fn hide_values() -> Result<(), Box<dyn std::error::Error>> {
 }
 
 #[test]
-fn words_saved_to_config() -> Result<(), Box<dyn std::error::Error>> {
+fn test_storing_config() -> Result<(), Box<dyn std::error::Error>> {
+    let file_path = confy::get_configuration_file_path("hide", "hide-cfg").unwrap();
+    if file_path.exists() {
+        fs::remove_file(&file_path).unwrap();
+    }
+
     let mut cmd = Command::cargo_bin("hide")?;
     cmd.arg("--add-words").arg("name,surname");
-    let file_path = confy::get_configuration_file_path("hide", "hide-cfg").unwrap();
+    cmd.assert().success();
+
     assert!(file_path.exists());
-    let file = std::fs::read_to_string(file_path).unwrap();
-    assert!(file.contains("one"));
-    assert!(file.contains("two"));
+
+    let file = fs::read_to_string(&file_path).unwrap();
+    assert!(file.contains("'name'"));
+    assert!(file.contains("'surname'"));
+
+    let mut cmd = Command::cargo_bin("hide")?;
+    cmd.arg("--remove-words").arg("name");
+    cmd.assert().success();
+
+    let file = fs::read_to_string(&file_path).unwrap();
+    println!("file: {file}");
+    assert_eq!(file.contains("'name'"), false);
+    assert!(file.contains("'surname'"));
+
     Ok(())
 }
