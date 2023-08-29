@@ -39,3 +39,15 @@ fn hide_values() -> Result<(), Box<dyn std::error::Error>> {
 
     Ok(())
 }
+
+#[test]
+fn words_saved_to_config() -> Result<(), Box<dyn std::error::Error>> {
+    let mut cmd = Command::cargo_bin("hide")?;
+    cmd.arg("--add-words").arg("name,surname");
+    let file_path = confy::get_configuration_file_path("hide", "hide-cfg").unwrap();
+    assert!(file_path.exists());
+    let file = std::fs::read_to_string(file_path).unwrap();
+    assert!(file.contains("one"));
+    assert!(file.contains("two"));
+    Ok(())
+}

@@ -11,6 +11,7 @@ pub trait WordsStorage {
     fn put(&mut self, word: &str) -> Result;
     fn remove(&mut self, word: &str) -> Result;
     fn contains(&self, word: &str) -> bool;
+    fn all(&self) -> HashSet<String>;
 }
 
 pub struct InMemoryWordsStorage {
@@ -18,10 +19,16 @@ pub struct InMemoryWordsStorage {
 }
 
 impl InMemoryWordsStorage {
-    pub fn new() -> InMemoryWordsStorage {
-        let storage: HashSet<String> = HashSet::new();
-        let storage = InMemoryWordsStorage { storage };
-        storage
+    fn new() -> Self {
+        InMemoryWordsStorage {
+            storage: HashSet::new(),
+        }
+    }
+
+    pub fn init_with(set: &HashSet<String>) -> Self {
+        InMemoryWordsStorage {
+            storage: set.to_owned(),
+        }
     }
 }
 
@@ -45,6 +52,10 @@ impl WordsStorage for InMemoryWordsStorage {
 
     fn contains(&self, word: &str) -> bool {
         self.storage.contains(word)
+    }
+
+    fn all(&self) -> HashSet<String> {
+        self.storage.clone()
     }
 }
 
@@ -137,5 +148,18 @@ mod test {
         let mut storage = InMemoryWordsStorage::new();
 
         assert!(storage.remove("").is_err()); // Assuming that removing an empty string returns an error
+    }
+
+    #[test]
+    fn test_all_works() {
+        let mut storage = InMemoryWordsStorage::new();
+
+        storage.put("one").unwrap();
+        storage.put("two").unwrap();
+
+        let all = storage.all();
+        assert!(all.contains("one"));
+        assert!(all.contains("two"));
+        assert_eq!(all.len(), 2);
     }
 }

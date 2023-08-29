@@ -1,3 +1,4 @@
+use crate::config::Config;
 use crate::hide_args::HideArgs;
 use crate::words_storage::{InMemoryWordsStorage, WordsStorage};
 use anyhow::{Context, Result};
@@ -6,6 +7,7 @@ use serde_json::{json, Map, Value};
 use simple_logger::SimpleLogger;
 use std::fs;
 
+mod config;
 mod hide_args;
 mod words_storage;
 
@@ -18,7 +20,10 @@ fn main() -> Result<()> {
         log::info!("debug enabled, logger initialized.");
     }
 
-    let mut storage = InMemoryWordsStorage::new();
+    let mut config: Config =
+        confy::load("hide", "hide-cfg").with_context(|| "could not parse config")?;
+
+    let mut storage = InMemoryWordsStorage::init_with(&config.sensitive_words);
 
     // add words if any
     if !args.add_words.is_empty() {
@@ -28,6 +33,14 @@ fn main() -> Result<()> {
     // remove words if any
     if !args.remove_words.is_empty() {
         remove_words(&mut storage, &args.remove_words);
+    }
+
+    if !args.remove_words.is_empty() || !args.add_words.is_empty() {
+        log::info!("storing config...");
+        config.sensitive_words = storage.all();
+        confy::store("hide", "hide-cfg", &config)
+            .with_context(|| "could not store config")
+            .unwrap();
     }
 
     // nothing to do if input not specified

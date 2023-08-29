@@ -9,7 +9,9 @@ edition = "2021"
 [dependencies]
 anyhow = "1.0.75"
 clap = { version = "4.3.22", features = ["derive"] }
+confy = "0.5.1"
 log = "0.4.20"
+serde = { version = "1.0.185", features = ["derive"] }
 serde_json = "1.0.105"
 simple_logger = "4.2.0"
 
