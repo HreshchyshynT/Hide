@@ -105,7 +105,7 @@ fn hide_keys(storage: &impl WordsStorage, json_map: &Map<String, Value>) -> Map<
         let value = if value.is_object() {
             json!(hide_keys(storage, value.as_object().unwrap()))
         } else if storage.contains(key) {
-            Value::String("hidden".to_string())
+            Value::String("[hidden]".to_string())
         } else {
             value.clone()
         };
