@@ -5,11 +5,14 @@ use anyhow::{Context, Result};
 use clap::Parser;
 use serde_json::{json, Map, Value};
 use simple_logger::SimpleLogger;
+use std::collections::HashSet;
 use std::fs;
 
 mod config;
 mod hide_args;
 mod words_storage;
+
+pub const PLACEHOLDER: &str = "[hidden]";
 
 fn main() -> Result<()> {
     let args = HideArgs::parse();
@@ -20,10 +23,10 @@ fn main() -> Result<()> {
         log::info!("debug enabled, logger initialized.");
     }
 
-    let mut config: Config =
+    let config: Config =
         confy::load("hide", "hide-cfg").with_context(|| "could not parse config")?;
-
-    let mut storage = InMemoryWordsStorage::init_with(&config.sensitive_words);
+    let sensitive_words = config.sensitive_words.unwrap_or(HashSet::new());
+    let mut storage = InMemoryWordsStorage::init_with(&sensitive_words);
 
     // add words if any
     if !args.add_words.is_empty() {
@@ -37,7 +40,9 @@ fn main() -> Result<()> {
 
     if !args.remove_words.is_empty() || !args.add_words.is_empty() {
         log::info!("storing config...");
-        config.sensitive_words = storage.all();
+        let config = Config {
+            sensitive_words: Some(storage.all()),
+        };
         confy::store("hide", "hide-cfg", &config)
             .with_context(|| "could not store config")
             .unwrap();
@@ -55,15 +60,12 @@ fn main() -> Result<()> {
     let file_str = fs::read_to_string(input_path)
         .with_context(|| format!("could not read file: {}", input_path))?;
 
-    let input_map: Map<String, Value> = serde_json::from_str::<Value>(&file_str)
-        .with_context(|| format!("could not parse file: {}", input_path))?
-        .as_object()
-        .unwrap()
-        .clone();
+    let input = serde_json::from_str::<Value>(&file_str)
+        .with_context(|| format!("could not parse file: {}", input_path))?;
 
-    log::debug!("input map:\n{:?}", input_map);
+    log::debug!("input:\n{:?}", input);
 
-    let output = hide_keys(&storage, &input_map);
+    let output = hide_by_keys(&storage, &input);
     let output = serde_json::to_string_pretty(&output).unwrap();
     match args.output_file {
         // print to console if output file not specified
@@ -98,18 +100,41 @@ fn remove_words(storage: &mut impl WordsStorage, words: &Vec<String>) {
         .for_each(|msg| log::debug!("{}", msg));
 }
 
-fn hide_keys(storage: &impl WordsStorage, json_map: &Map<String, Value>) -> Map<String, Value> {
-    let mut result_map = serde_json::Map::with_capacity(json_map.len());
-    for (key, value) in json_map {
+fn hide_by_keys(storage: &impl WordsStorage, json: &Value) -> Value {
+    match json {
+        Value::Array(_) => hide_by_keys_in_array(storage, json.as_array().unwrap()),
+        Value::Object(_) => hide_by_keys_in_map(storage, json.as_object().unwrap()),
+        _ => json.clone(),
+    }
+}
+
+fn hide_by_keys_in_map(storage: &impl WordsStorage, json: &Map<String, Value>) -> Value {
+    let mut result_map = serde_json::Map::with_capacity(json.len());
+    for (key, value) in json {
         log::debug!("key: {}, value: {}", key, value);
         let value = if value.is_object() {
-            json!(hide_keys(storage, value.as_object().unwrap()))
+            hide_by_keys_in_map(storage, value.as_object().unwrap())
+        } else if value.is_array() {
+            hide_by_keys_in_array(storage, &value.as_array().unwrap())
         } else if storage.contains(key) {
-            Value::String("[hidden]".to_string())
+            Value::String(PLACEHOLDER.to_string())
         } else {
             value.clone()
         };
         result_map.insert(key.to_owned(), value);
     }
-    result_map
+    json!(result_map)
+}
+
+fn hide_by_keys_in_array(storage: &impl WordsStorage, json: &Vec<Value>) -> Value {
+    let mut result: Vec<Value> = Vec::with_capacity(json.len());
+    for item in json {
+        let item = match item {
+            Value::Array(_) => hide_by_keys_in_array(storage, item.as_array().unwrap()),
+            Value::Object(_) => hide_by_keys_in_map(storage, item.as_object().unwrap()),
+            _ => item.clone(),
+        };
+        result.push(item);
+    }
+    json!(result)
 }

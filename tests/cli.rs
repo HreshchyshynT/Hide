@@ -4,6 +4,8 @@ use predicates::prelude::*;
 use serde_json::{json, Value}; // Used for writing assertions
 use std::{fs, process::Command}; // Run programs
 
+static PLACEHOLDER: &str = "[hidden]";
+
 #[test]
 fn file_doesnt_exist() -> Result<(), Box<dyn std::error::Error>> {
     let mut cmd = Command::cargo_bin("hide")?;
@@ -89,10 +91,10 @@ fn hide_values_in_json_array() -> Result<(), Box<dyn std::error::Error>> {
     ]
     "#;
 
-    let expected_output = r#"[
+    let expected_output = json!([
         {"username":"alice","password":"[hidden]"},
         {"username":"bob","password":"[hidden]"}
-    ]"#;
+    ]);
 
     file.write_str(input)?;
 
@@ -102,11 +104,10 @@ fn hide_values_in_json_array() -> Result<(), Box<dyn std::error::Error>> {
         .arg("--add-words")
         .arg("password");
 
-    // TODO: wrong assertion
-    cmd.assert()
-        .success()
-        .stdout(predicate::str::contains(expected_output));
-
+    let output = cmd.assert().success().get_output().stdout.to_owned();
+    let output = String::from_utf8(output).unwrap();
+    let output: Value = serde_json::from_str(&output).unwrap();
+    assert_eq!(expected_output, output);
     Ok(())
 }
 
