@@ -20,7 +20,7 @@ Hide is designed to assist developers, data analysts, and anyone working with JS
 Basic usage to hide sensitive information in a JSON file:
 
 ```bash
-hide file.json
+hide -i file.json --add-words password
 ```
 
 Add or remove keywords:
@@ -39,7 +39,26 @@ Provide instructions on how to install Hide, including any dependencies or platf
 
 Contributions to Hide are welcome! Whether it's bug reporting, feature requests, or code contributions, please see our [Contributing Guide](link-to-contributing-guide) for details.
 
-## TODO: 3rd party libraries
+## 3rd party libraries
+
+[anyhow](https://docs.rs/anyhow/latest/anyhow/) - This library provides anyhow::Error, a trait object based error type for easy idiomatic error handling in Rust applications.
+
+[clap](https://docs.rs/clap/latest/clap/) - parsing arguments, generating --help
+
+[confy](https://docs.rs/confy/latest/confy/) - storing and reading config file
+
+
+[serde](https://serde.rs/) - serializing and deserializing json into rust structures and vise versa
+
+[serde_json](https://docs.rs/serde_json/latest/serde_json/) - serde for json
+
+[log](https://docs.rs/log/latest/log/), [simple_logger](https://docs.rs/simple_logger/latest/simple_logger/) - logging
+
+[assert_cmd](https://docs.rs/assert_cmd/latest/assert_cmd/) - running cli command in tests 
+
+[assert_fs](https://docs.rs/assert_fs/latest/assert_fs/) - Filesystem fixtures and assertions for testing
+
+[predicates](https://docs.rs/predicates/latest/predicates/) - writing assertions that assert_cmd can test against (and that have great error messages)
 
 ## License
 
