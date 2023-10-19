@@ -2,20 +2,25 @@
 
 # Hide
 
-Hide is a command-line tool that safeguards sensitive information in JSON files by identifying and replacing specific keys, such as personal details, with a customizable placeholder.
+Hide is a command-line tool that mask sensitive information in JSON file. Gave it a file, tell it the keys and their values will be changed to placeholder value.
+
+**Why do I need it?** I often used ChatGPT to process JSON, but I don't want to share any sensitive information (and you shouldn't) - that's why I decided to write a simple tool that will hide such information. 
+
+Also, I am learning Rust, and as we know, the best way to learn code is to code.  
 
 ## Overview
 
-Hide is designed to assist developers, data analysts, and anyone working with JSON files containing potentially sensitive information. By targeting specific keys like "name", "surname", "phone_number", and "email", Hide replaces their corresponding values with a "[hidden]" placeholder, or other customizable options.
+Hide is designed to assist developers, data analysts, and anyone working with JSON files containing potentially sensitive information. By targeting specific keys like "name", "surname", "phone_number", etc, Hide replaces their corresponding values with a "[hidden]" placeholder.
 
-### WIP: Features
+### Features
 
-- **Keyword Management**: Hide comes with predefined keywords and allows users to easily add or remove keywords through the command-line interface or by manually editing a configuration file.
-- **Customizable Output**: By default, Hide saves the modified JSON to a new file, but users can specify custom output paths or even overwrite the original file.
-- **Future-Proof Design**: While the current version uses "[hidden]" as the placeholder, future updates may include encryption, different placeholders, or other mechanisms for hiding sensitive data.
+- **Keyword Management**: Hide allows users to easily add or remove keywords through the command-line interface or by manually editing a configuration file.
+- **Customizable Output**: By default, Hide prints the modified JSON to a stdout, but users can specify output file path.
 - **Debugging and Error Handling**: Hide provides clear error messages and optional stack traces for debugging, ensuring a smooth user experience.
 
-## WIP: Usage
+More to come. (Don't hesitate to suggest your idea through 'issues')
+
+## Usage
 
 Basic usage to hide sensitive information in a JSON file:
 
@@ -23,21 +28,26 @@ Basic usage to hide sensitive information in a JSON file:
 hide -i file.json --add-words password
 ```
 
-Add or remove keywords:
+Add or remove keywords (not necessary to call together):
 
 ```bash
-hide --add-words [word1, word2, ...]
+hide --add-words [word1,word2,...] --remove-words [word1,word2,...]
 ```
 
-For a complete list of options and detailed instructions, please refer to the [User Guide](link-to-user-guide).
+Specify output file
+```bash
+hide -i file.json -o output.json
+```
+
+For a complete list of options use `hide --help`
 
 ## TODO: Installation
 
 Provide instructions on how to install Hide, including any dependencies or platform-specific details.
 
-## TODO: Contributing
+## Contributing
 
-Contributions to Hide are welcome! Whether it's bug reporting, feature requests, or code contributions, please see our [Contributing Guide](link-to-contributing-guide) for details.
+Contributions to Hide are welcome! Whether it's bug reporting, feature requests, or code contributions.
 
 ## 3rd party libraries
 

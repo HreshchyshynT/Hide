@@ -1,0 +1,44 @@
+{
+    "users": [
+        {
+            "name": "John Doe",
+            "password": "password123",
+            "email": "johndoe@example.com",
+            "age": 29,
+            "address": {
+                "street": "123 Main St",
+                "city": "Springfield",
+                "state": "IL",
+                "zip": "12345"
+            },
+            "phone": "555-555-5555"
+        },
+        {
+            "name": "Jane Smith",
+            "password": "mypassword456",
+            "email": "janesmith@example.com",
+            "age": 34,
+            "address": {
+                "street": "456 Elm St",
+                "city": "Shelbyville",
+                "state": "IL",
+                "zip": "67890"
+            },
+            "phone": "555-555-5556"
+        },
+        {
+            "name": "Robert Johnson",
+            "password": "pass789",
+            "email": "robertj@example.com",
+            "age": 45,
+            "address": {
+                "street": "789 Maple St",
+                "city": "Capital City",
+                "state": "IL",
+                "zip": "11223"
+            },
+            "phone": "555-555-5557"
+        }
+    ]
+}
+
