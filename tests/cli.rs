@@ -241,7 +241,40 @@ fn test_array_inside_object() -> Result {
         .arg("--add-words")
         .arg("password")
         .arg("--remove-words")
-        .arg("name"); // ensure that key 'name' is not in "to hide" list
+        .arg("name, users"); // ensure that key 'name' is not in "to hide" list
+
+    // TODO: learn why do we need to_owned() here
+    let output = cmd.assert().success().get_output().stdout.to_owned();
+    let output: Value = serde_json::from_str(&String::from_utf8(output)?)?;
+    assert_eq!(expected_output, output);
+    Ok(())
+}
+
+#[test]
+fn test_hide_json_object() -> Result {
+    let file = assert_fs::NamedTempFile::new("sample.json")?;
+    let array_inside_object = r#"{
+    "users": [
+        {"name": "Alice", "password": "secret1"},
+        {"name": "Bob", "password": "secret2"}
+    ]
+}"#;
+    file.write_str(array_inside_object).unwrap();
+    let expected_output = format!(
+        r#"
+    {{
+        "users": "{}"
+    }}
+    "#,
+        PLACEHOLDER,
+    );
+    let expected_output: Value = serde_json::from_str(&expected_output).unwrap();
+
+    let mut cmd = Command::cargo_bin("hide")?;
+    cmd.arg("-i")
+        .arg(file.path())
+        .arg("--add-words")
+        .arg("users");
 
     // TODO: learn why do we need to_owned() here
     let output = cmd.assert().success().get_output().stdout.to_owned();

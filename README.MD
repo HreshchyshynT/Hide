@@ -39,7 +39,7 @@ Specify output file
 hide -i file.json -o output.json
 ```
 
-For a complete list of options use `hide --help`
+For a complete list of options, use `hide --help`
 
 ## TODO: Installation
 
@@ -51,14 +51,14 @@ Contributions to Hide are welcome! Whether it's bug reporting, feature requests,
 
 ## 3rd party libraries
 
-[anyhow](https://docs.rs/anyhow/latest/anyhow/) - This library provides anyhow::Error, a trait object based error type for easy idiomatic error handling in Rust applications.
+[anyhow](https://docs.rs/anyhow/latest/anyhow/) - This library provides anyhow::Error, a trait object-based error type for easy idiomatic error handling in Rust applications.
 
 [clap](https://docs.rs/clap/latest/clap/) - parsing arguments, generating --help
 
 [confy](https://docs.rs/confy/latest/confy/) - storing and reading config file
 
 
-[serde](https://serde.rs/) - serializing and deserializing json into rust structures and vise versa
+[serde](https://serde.rs/) - serializing and deserializing json into rust structures and vice versa
 
 [serde_json](https://docs.rs/serde_json/latest/serde_json/) - serde for json
 

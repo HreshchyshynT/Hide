@@ -112,12 +112,12 @@ fn hide_by_keys_in_map(storage: &impl WordsStorage, json: &Map<String, Value>) -
     let mut result_map = serde_json::Map::with_capacity(json.len());
     for (key, value) in json {
         log::debug!("key: {}, value: {}", key, value);
-        let value = if value.is_object() {
+        let value = if storage.contains(key) {
+            Value::String(PLACEHOLDER.to_string())
+        } else if value.is_object() {
             hide_by_keys_in_map(storage, value.as_object().unwrap())
         } else if value.is_array() {
             hide_by_keys_in_array(storage, &value.as_array().unwrap())
-        } else if storage.contains(key) {
-            Value::String(PLACEHOLDER.to_string())
         } else {
             value.clone()
         };
