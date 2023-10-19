@@ -22,19 +22,23 @@ More to come. (Don't hesitate to suggest your idea through 'issues')
 
 ## Usage
 
-Basic usage to hide sensitive information in a JSON file:
+Basic usage to hide sensitive information in a JSON file and print result to std output:
 
 ```bash
-hide -i file.json --add-keys password
+hide -i file.json
 ```
 
-Add or remove keywords (not necessary to call together):
+You can also specify keys which values you want to hide: 
+```bash
+hide -i file.json --add-keys [key1,key2,...]
+```
+Keys are stored in config file and are not unique for each app run, therefore you can add or remove keys without processing JSON:
 
 ```bash
 hide --add-keys [key1,key2,...] --remove-keys [key1,key2,...]
 ```
 
-Specify output file
+Specify output file:
 ```bash
 hide -i file.json -o output.json
 ```
