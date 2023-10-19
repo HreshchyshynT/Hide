@@ -3,13 +3,13 @@ use std::collections::HashSet;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Config {
-    pub sensitive_words: Option<HashSet<String>>,
+    pub sensitive_keys: Option<HashSet<String>>,
 }
 
 impl Default for Config {
     fn default() -> Self {
         Config {
-            sensitive_words: Some(HashSet::new()),
+            sensitive_keys: Some(HashSet::new()),
         }
     }
 }

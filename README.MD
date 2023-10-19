@@ -25,13 +25,13 @@ More to come. (Don't hesitate to suggest your idea through 'issues')
 Basic usage to hide sensitive information in a JSON file:
 
 ```bash
-hide -i file.json --add-words password
+hide -i file.json --add-keys password
 ```
 
 Add or remove keywords (not necessary to call together):
 
 ```bash
-hide --add-words [word1,word2,...] --remove-words [word1,word2,...]
+hide --add-keys [key1,key2,...] --remove-keys [key1,key2,...]
 ```
 
 Specify output file

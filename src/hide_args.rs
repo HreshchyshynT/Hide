@@ -19,10 +19,10 @@ pub struct HideArgs {
     /// enable debug mode
     #[arg(short, long)]
     pub debug: bool,
-    /// add keywords to hide in the JSON
-    #[arg(long = "add-words", value_delimiter = ',')]
-    pub add_words: Vec<String>,
-    /// remove keywords from hiding in the JSON
-    #[arg(long = "remove-words", value_delimiter = ',')]
-    pub remove_words: Vec<String>,
+    /// add keys to hide in the JSON
+    #[arg(long = "add-keys", value_delimiter = ',')]
+    pub add_keys: Vec<String>,
+    /// remove keys from hiding in the JSON
+    #[arg(long = "remove-keys", value_delimiter = ',')]
+    pub remove_keys: Vec<String>,
 }

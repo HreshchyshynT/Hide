@@ -1,6 +1,6 @@
 use crate::config::Config;
 use crate::hide_args::HideArgs;
-use crate::words_storage::{InMemoryWordsStorage, WordsStorage};
+use crate::keys_storage::{InMemoryKeysStorage, KeysStorage};
 use anyhow::{Context, Result};
 use clap::Parser;
 use serde_json::{json, Map, Value};
@@ -10,7 +10,7 @@ use std::fs;
 
 mod config;
 mod hide_args;
-mod words_storage;
+mod keys_storage;
 
 pub const PLACEHOLDER: &str = "[hidden]";
 
@@ -25,23 +25,23 @@ fn main() -> Result<()> {
 
     let config: Config =
         confy::load("hide", "hide-cfg").with_context(|| "could not parse config")?;
-    let sensitive_words = config.sensitive_words.unwrap_or(HashSet::new());
-    let mut storage = InMemoryWordsStorage::init_with(&sensitive_words);
+    let sensitive_keys = config.sensitive_keys.unwrap_or(HashSet::new());
+    let mut storage = InMemoryKeysStorage::init_with(&sensitive_keys);
 
-    // add words if any
-    if !args.add_words.is_empty() {
-        add_words(&mut storage, &args.add_words);
+    // add keys if any
+    if !args.add_keys.is_empty() {
+        add_keys(&mut storage, &args.add_keys);
     }
 
-    // remove words if any
-    if !args.remove_words.is_empty() {
-        remove_words(&mut storage, &args.remove_words);
+    // remove keys if any
+    if !args.remove_keys.is_empty() {
+        remove_keys(&mut storage, &args.remove_keys);
     }
 
-    if !args.remove_words.is_empty() || !args.add_words.is_empty() {
+    if !args.remove_keys.is_empty() || !args.add_keys.is_empty() {
         log::info!("storing config...");
         let config = Config {
-            sensitive_words: Some(storage.all()),
+            sensitive_keys: Some(storage.all()),
         };
         confy::store("hide", "hide-cfg", &config)
             .with_context(|| "could not store config")
@@ -76,31 +76,29 @@ fn main() -> Result<()> {
     Ok(())
 }
 
-fn add_words(storage: &mut impl WordsStorage, words: &Vec<String>) {
-    log::debug!("adding words...");
-    words
-        .iter()
-        .map(|word| (word, storage.put(word)))
-        .map(|(word, result)| match result {
-            Ok(()) => format!("saved {}", word),
+fn add_keys(storage: &mut impl KeysStorage, keys: &Vec<String>) {
+    log::debug!("adding keys...");
+    keys.iter()
+        .map(|key| (key, storage.put(key)))
+        .map(|(key, result)| match result {
+            Ok(()) => format!("saved {}", key),
             Err(error) => format!("{}", error),
         })
         .for_each(|msg| log::debug!("{}", msg));
 }
 
-fn remove_words(storage: &mut impl WordsStorage, words: &Vec<String>) {
-    log::debug!("removing words...");
-    words
-        .iter()
-        .map(|word| (word, storage.remove(word)))
-        .map(|(word, result)| match result {
-            Ok(()) => format!("removed {}", word),
+fn remove_keys(storage: &mut impl KeysStorage, keys: &Vec<String>) {
+    log::debug!("removing keys...");
+    keys.iter()
+        .map(|keys| (keys, storage.remove(keys)))
+        .map(|(keys, result)| match result {
+            Ok(()) => format!("removed {}", keys),
             Err(error) => format!("{}", error),
         })
         .for_each(|msg| log::debug!("{}", msg));
 }
 
-fn hide_by_keys(storage: &impl WordsStorage, json: &Value) -> Value {
+fn hide_by_keys(storage: &impl KeysStorage, json: &Value) -> Value {
     match json {
         Value::Array(_) => hide_by_keys_in_array(storage, json.as_array().unwrap()),
         Value::Object(_) => hide_by_keys_in_map(storage, json.as_object().unwrap()),
@@ -108,7 +106,7 @@ fn hide_by_keys(storage: &impl WordsStorage, json: &Value) -> Value {
     }
 }
 
-fn hide_by_keys_in_map(storage: &impl WordsStorage, json: &Map<String, Value>) -> Value {
+fn hide_by_keys_in_map(storage: &impl KeysStorage, json: &Map<String, Value>) -> Value {
     let mut result_map = serde_json::Map::with_capacity(json.len());
     for (key, value) in json {
         log::debug!("key: {}, value: {}", key, value);
@@ -126,7 +124,7 @@ fn hide_by_keys_in_map(storage: &impl WordsStorage, json: &Map<String, Value>) -
     json!(result_map)
 }
 
-fn hide_by_keys_in_array(storage: &impl WordsStorage, json: &Vec<Value>) -> Value {
+fn hide_by_keys_in_array(storage: &impl KeysStorage, json: &Vec<Value>) -> Value {
     let mut result: Vec<Value> = Vec::with_capacity(json.len());
     for item in json {
         let item = match item {

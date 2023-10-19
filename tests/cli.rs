@@ -37,7 +37,7 @@ fn hide_values_in_simple_json() -> Result {
     let mut cmd = Command::cargo_bin("hide")?;
     cmd.arg("-i")
         .arg(file.path())
-        .arg("--add-words")
+        .arg("--add-keys")
         .arg("name,surname");
 
     cmd.assert()
@@ -85,7 +85,7 @@ fn hide_values_in_nested_json() -> Result {
     let mut cmd = Command::cargo_bin("hide")?;
     cmd.arg("-i")
         .arg(file.path())
-        .arg("--add-words")
+        .arg("--add-keys")
         .arg("password");
 
     let output = cmd.assert().success().get_output().stdout.to_owned();
@@ -120,7 +120,7 @@ fn hide_values_in_json_array() -> Result {
     let mut cmd = Command::cargo_bin("hide")?;
     cmd.arg("-i")
         .arg(file.path())
-        .arg("--add-words")
+        .arg("--add-keys")
         .arg("password");
 
     let output = cmd.assert().success().get_output().stdout.to_owned();
@@ -140,7 +140,7 @@ fn test_storing_config() -> Result {
     }
 
     let mut cmd = Command::cargo_bin("hide")?;
-    cmd.arg("--add-words").arg("name,surname");
+    cmd.arg("--add-keys").arg("name,surname");
     cmd.unwrap().assert().success();
 
     assert!(file_path.exists());
@@ -150,7 +150,7 @@ fn test_storing_config() -> Result {
     assert!(file.contains("'surname'"));
 
     let mut cmd = Command::cargo_bin("hide")?;
-    cmd.arg("--remove-words").arg("name");
+    cmd.arg("--remove-keys").arg("name");
     cmd.assert().success();
 
     let file = fs::read_to_string(&file_path).unwrap();
@@ -238,9 +238,9 @@ fn test_array_inside_object() -> Result {
     let mut cmd = Command::cargo_bin("hide")?;
     cmd.arg("-i")
         .arg(file.path())
-        .arg("--add-words")
+        .arg("--add-keys")
         .arg("password")
-        .arg("--remove-words")
+        .arg("--remove-keys")
         .arg("name, users"); // ensure that key 'name' is not in "to hide" list
 
     // TODO: learn why do we need to_owned() here
@@ -273,7 +273,7 @@ fn test_hide_json_object() -> Result {
     let mut cmd = Command::cargo_bin("hide")?;
     cmd.arg("-i")
         .arg(file.path())
-        .arg("--add-words")
+        .arg("--add-keys")
         .arg("users");
 
     // TODO: learn why do we need to_owned() here
