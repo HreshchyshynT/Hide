@@ -7,7 +7,6 @@ use std::{fs, io::Write, process::Command}; // Run programs
 static STRING_PLACEHOLDER: &str = "String";
 static NUMBER_PLACEHOLDER: &str = "Number";
 static BOOL_PLACEHOLDER: &str = "Bool";
-static NULL_PLACEHOLDER: Value = Value::Null; // todo: test
 
 type Result = std::result::Result<(), Box<dyn std::error::Error>>;
 
@@ -314,6 +313,23 @@ fn test_hide_values_in_json_object() -> Result {
 
     let mut cmd = Command::cargo_bin("hide")?;
     cmd.arg("-i").arg(file.path()).arg("--add-keys").arg("user");
+
+    let output = cmd.assert().success().get_output().stdout.to_owned();
+    let output: Value = serde_json::from_str(&String::from_utf8(output)?)?;
+    assert_eq!(expected_output, output);
+    Ok(())
+}
+
+#[test]
+fn hide_null() -> Result {
+    let file = assert_fs::NamedTempFile::new("sample.json")?;
+    let input = r#"{"key": null}"#;
+    file.write_str(input).unwrap();
+    let expected_output = r#"{"key": null}"#;
+    let expected_output: Value = serde_json::from_str(expected_output).unwrap();
+
+    let mut cmd = Command::cargo_bin("hide")?;
+    cmd.arg("-i").arg(file.path()).arg("--add-keys").arg("key");
 
     let output = cmd.assert().success().get_output().stdout.to_owned();
     let output: Value = serde_json::from_str(&String::from_utf8(output)?)?;
