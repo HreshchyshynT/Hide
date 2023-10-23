@@ -12,8 +12,6 @@ mod config;
 mod hide_args;
 mod keys_storage;
 
-pub const PLACEHOLDER: &str = "[hidden]";
-
 fn main() -> Result<()> {
     let args = HideArgs::parse();
 
@@ -111,7 +109,7 @@ fn hide_by_keys_in_map(storage: &impl KeysStorage, json: &Map<String, Value>) ->
     for (key, value) in json {
         log::debug!("key: {}, value: {}", key, value);
         let value = if storage.contains(key) {
-            Value::String(PLACEHOLDER.to_string())
+            hide(value)
         } else if value.is_object() {
             hide_by_keys_in_map(storage, value.as_object().unwrap())
         } else if value.is_array() {
@@ -135,4 +133,21 @@ fn hide_by_keys_in_array(storage: &impl KeysStorage, json: &Vec<Value>) -> Value
         result.push(item);
     }
     json!(result)
+}
+
+fn hide(value: &Value) -> Value {
+    let new_value = match value {
+        Value::Null => Value::Null,
+        Value::Bool(_) => Value::String(String::from("Bool")),
+        Value::Number(_) => Value::String(String::from("Number")),
+        Value::String(_) => Value::String(String::from("String")),
+        Value::Array(values) => Value::Array(values.iter().map(|v| hide(v)).collect()),
+        Value::Object(values) => Value::Object(
+            values
+                .iter()
+                .map(|(k, v)| (k.to_owned(), hide(v)))
+                .collect(),
+        ),
+    };
+    new_value
 }

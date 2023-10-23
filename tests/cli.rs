@@ -4,7 +4,10 @@ use predicates::prelude::*;
 use serde_json::Value; // Used for writing assertions
 use std::{fs, io::Write, process::Command}; // Run programs
 
-static PLACEHOLDER: &str = "[hidden]";
+static STRING_PLACEHOLDER: &str = "String";
+static NUMBER_PLACEHOLDER: &str = "Number";
+static BOOL_PLACEHOLDER: &str = "Bool";
+static NULL_PLACEHOLDER: Value = Value::Null; // todo: test
 
 type Result = std::result::Result<(), Box<dyn std::error::Error>>;
 
@@ -38,17 +41,21 @@ fn hide_values_in_simple_json() -> Result {
     cmd.arg("-i")
         .arg(file.path())
         .arg("--add-keys")
-        .arg("name,surname");
+        .arg("name,surname,age");
 
     cmd.assert()
         .success()
         .stdout(predicate::str::contains(format!(
             "\"name\": \"{}\"",
-            PLACEHOLDER,
+            STRING_PLACEHOLDER,
         )))
         .stdout(predicate::str::contains(format!(
             "\"surname\": \"{}\"",
-            PLACEHOLDER,
+            STRING_PLACEHOLDER,
+        )))
+        .stdout(predicate::str::contains(format!(
+            "\"age\": \"{}\"",
+            NUMBER_PLACEHOLDER,
         )));
 
     Ok(())
@@ -77,7 +84,7 @@ fn hide_values_in_nested_json() -> Result {
             }}
         }}
     }}"#,
-        PLACEHOLDER,
+        STRING_PLACEHOLDER,
     );
     let expected_output: Value = serde_json::from_str(&expected_output).unwrap();
     file.write_str(input)?;
@@ -86,7 +93,9 @@ fn hide_values_in_nested_json() -> Result {
     cmd.arg("-i")
         .arg(file.path())
         .arg("--add-keys")
-        .arg("password");
+        .arg("password")
+        .arg("--remove-keys")
+        .arg("user");
 
     let output = cmd.assert().success().get_output().stdout.to_owned();
     let output_json: Value = serde_json::from_str(&String::from_utf8(output).unwrap()).unwrap();
@@ -111,7 +120,7 @@ fn hide_values_in_json_array() -> Result {
         {{"username": "bob", "password": "{}"}}
     ]
     "#,
-        PLACEHOLDER, PLACEHOLDER,
+        STRING_PLACEHOLDER, STRING_PLACEHOLDER,
     );
     let expected_output: Value = serde_json::from_str(&expected_output).unwrap();
 
@@ -213,12 +222,12 @@ fn test_invalid_input_json() -> Result {
 }
 
 #[test]
-fn test_array_inside_object() -> Result {
+fn test_object_values_inside_array() -> Result {
     let file = assert_fs::NamedTempFile::new("sample.json")?;
     let array_inside_object = r#"{
     "users": [
-        {"name": "Alice", "password": "secret1"},
-        {"name": "Bob", "password": "secret2"}
+        {"name": "Alice", "password": "secret1", "age": 44, "is_owner": true },
+        {"name": "Bob", "password": "secret2", "age": 45, "is_owner": false }
     ]
 }"#;
     file.write_str(array_inside_object).unwrap();
@@ -226,12 +235,17 @@ fn test_array_inside_object() -> Result {
         r#"
     {{
         "users": [
-            {{"name": "Alice", "password": "{}"}},
-            {{"name": "Bob", "password": "{}"}}
+            {{"name": "Alice", "password": "{}", "age": "{}", "is_owner": "{}" }},
+            {{"name": "Bob", "password": "{}", "age": "{}", "is_owner": "{}" }}
         ]
     }}
     "#,
-        PLACEHOLDER, PLACEHOLDER,
+        STRING_PLACEHOLDER,
+        NUMBER_PLACEHOLDER,
+        BOOL_PLACEHOLDER,
+        STRING_PLACEHOLDER,
+        NUMBER_PLACEHOLDER,
+        BOOL_PLACEHOLDER,
     );
     let expected_output: Value = serde_json::from_str(&expected_output).unwrap();
 
@@ -239,9 +253,9 @@ fn test_array_inside_object() -> Result {
     cmd.arg("-i")
         .arg(file.path())
         .arg("--add-keys")
-        .arg("password")
+        .arg("password,age,is_owner")
         .arg("--remove-keys")
-        .arg("name, users"); // ensure that key 'name' is not in "to hide" list
+        .arg("name,users"); // ensure that key 'name' is not in "to hide" list
 
     // TODO: learn why do we need to_owned() here
     let output = cmd.assert().success().get_output().stdout.to_owned();
@@ -251,24 +265,18 @@ fn test_array_inside_object() -> Result {
 }
 
 #[test]
-fn test_hide_json_object() -> Result {
+fn test_empty_json_object() -> Result {
     let file = assert_fs::NamedTempFile::new("sample.json")?;
     let array_inside_object = r#"{
-    "users": [
-        {"name": "Alice", "password": "secret1"},
-        {"name": "Bob", "password": "secret2"}
-    ]
+    "users": {}
 }"#;
     file.write_str(array_inside_object).unwrap();
-    let expected_output = format!(
-        r#"
-    {{
-        "users": "{}"
-    }}
-    "#,
-        PLACEHOLDER,
-    );
-    let expected_output: Value = serde_json::from_str(&expected_output).unwrap();
+    let expected_output = r#"
+    {
+        "users": {}
+    }
+    "#;
+    let expected_output: Value = serde_json::from_str(expected_output).unwrap();
 
     let mut cmd = Command::cargo_bin("hide")?;
     cmd.arg("-i")
@@ -276,7 +284,37 @@ fn test_hide_json_object() -> Result {
         .arg("--add-keys")
         .arg("users");
 
-    // TODO: learn why do we need to_owned() here
+    let output = cmd.assert().success().get_output().stdout.to_owned();
+    let output: Value = serde_json::from_str(&String::from_utf8(output)?)?;
+    assert_eq!(expected_output, output);
+    Ok(())
+}
+
+#[test]
+fn test_hide_values_in_json_object() -> Result {
+    let file = assert_fs::NamedTempFile::new("sample.json")?;
+    let array_inside_object = r#"
+        {
+            "user": {
+                "name": "Jon",
+                "age": 45
+            }
+        }"#;
+    file.write_str(array_inside_object).unwrap();
+    let expected_output = format!(
+        r#"{{
+        "user": {{
+            "name": "{}",
+            "age": "{}"
+        }}
+    }}"#,
+        STRING_PLACEHOLDER, NUMBER_PLACEHOLDER,
+    );
+    let expected_output: Value = serde_json::from_str(&expected_output).unwrap();
+
+    let mut cmd = Command::cargo_bin("hide")?;
+    cmd.arg("-i").arg(file.path()).arg("--add-keys").arg("user");
+
     let output = cmd.assert().success().get_output().stdout.to_owned();
     let output: Value = serde_json::from_str(&String::from_utf8(output)?)?;
     assert_eq!(expected_output, output);

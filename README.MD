@@ -10,7 +10,27 @@ Also, I am learning Rust, and as we know, the best way to learn code is to code.
 
 ## Overview
 
-Hide is designed to assist developers, data analysts, and anyone working with JSON files containing potentially sensitive information. By targeting specific keys like "name", "surname", "phone_number", etc, Hide replaces their corresponding values with a "[hidden]" placeholder.
+Hide is designed to assist developers, data analysts, and anyone working with JSON files containing potentially sensitive information. By targeting specific keys like "name", "surname", "phone_number", etc, Hide replaces their corresponding values with a "[value_type]" placeholder, for example we have the following example.json:
+```json
+{
+    "name": "Leeeeroy",
+    "age": 20,
+    "is_cool": true
+}
+```
+Then this command
+```bash
+hide -i example.json --add-keys name,age,is_cool
+```
+
+Will print the following: 
+```json
+{
+    "name": "String",
+    "age": "Number",
+    "is_cool": "Bool"
+}
+```
 
 ### Features
 
